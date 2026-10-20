@@ -1,5 +1,5 @@
 const loginForm = document.getElementById("loginForm");
-let editAdminRow = null; // Tracks if we are editing or adding
+let editAdminRow = null; 
 
 loginForm.addEventListener("submit", function(event) {
     event.preventDefault();
@@ -30,6 +30,9 @@ function showSection(id, el) {
     document.getElementById("pageTitle").textContent = id.replace("Section", "");
 }
 
+/* =========================
+   LOAD DATA TABLES
+========================= */
 async function loadInquiries() {
     try {
         const res = await fetch('/api/inquiries');
@@ -73,6 +76,88 @@ async function cancelOrder(id) {
     }
 }
 
+/* =========================
+   REPORT GENERATOR (THE FIX)
+========================= */
+async function generateReport(type) {
+    // Show the output box
+    const outputCard = document.getElementById("reportOutputCard");
+    const title = document.getElementById("reportOutputTitle");
+    const content = document.getElementById("reportOutputContent");
+    outputCard.style.display = "block";
+
+    // Scroll to the output box so the user sees it
+    outputCard.scrollIntoView({ behavior: 'smooth' });
+
+    try {
+        if (type === 'sales' || type === 'financial') {
+            title.innerText = type === 'sales' ? "Sales Report" : "Financial Summary";
+            const res = await fetch('/api/orders');
+            const data = await res.json();
+            
+            // Calculate total revenue, ignoring cancelled orders
+            let total = data.filter(o => o.status !== 'Cancelled').reduce((s, o) => Number(s) + Number(o.amount), 0);
+            
+            content.innerHTML = `
+                <h3 style="color: var(--navy); margin-bottom: 10px;">Total Revenue: ₱${total.toLocaleString()}</h3>
+                <p><b>Total Orders:</b> ${data.length}</p>
+                <p><b>Valid (Non-Cancelled) Orders:</b> ${data.filter(o => o.status !== 'Cancelled').length}</p>
+            `;
+        } 
+        else if (type === 'inventory' || type === 'product') {
+            title.innerText = type === 'inventory' ? "Inventory Status" : "Product Sales";
+            
+            // Static mock data since we don't have a specific inventory DB table yet
+            content.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <tr style="background: var(--navy); color: white;">
+                        <th style="padding: 10px; text-align: left;">Product Name</th>
+                        <th style="padding: 10px; text-align: center;">Stock Level</th>
+                        <th style="padding: 10px; text-align: center;">Status</th>
+                    </tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #ddd;">Roller Blinds</td><td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">45</td><td style="padding: 10px; text-align: center; color: green; border-bottom: 1px solid #ddd;">In Stock</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #ddd;">Fabric Curtains</td><td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">8</td><td style="padding: 10px; text-align: center; color: orange; border-bottom: 1px solid #ddd;">Low Stock</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #ddd;">Vertical Blinds</td><td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">0</td><td style="padding: 10px; text-align: center; color: red; border-bottom: 1px solid #ddd;">Out of Stock</td></tr>
+                </table>
+            `;
+        }
+        else if (type === 'customer') {
+            title.innerText = "Customer Report";
+            const res = await fetch('/api/customers');
+            const data = await res.json();
+            
+            content.innerHTML = `
+                <h3 style="color: var(--navy); margin-bottom: 10px;">Total Customers: ${data.length}</h3>
+                <p>List of registered customers:</p>
+                <ul style="margin-top: 10px; margin-left: 20px;">
+                    ${data.map(c => `<li>${c.name} - ${c.email}</li>`).join('')}
+                </ul>
+            `;
+        }
+        else if (type === 'order') {
+            title.innerText = "Order Status Report";
+            const res = await fetch('/api/orders');
+            const data = await res.json();
+            
+            let pending = data.filter(o => o.status === 'Pending').length;
+            let cancelled = data.filter(o => o.status === 'Cancelled').length;
+            let completed = data.filter(o => o.status === 'Completed').length;
+            
+            content.innerHTML = `
+                <h3 style="color: var(--navy); margin-bottom: 10px;">Total Orders: ${data.length}</h3>
+                <p><b style="color: orange;">Pending:</b> ${pending}</p>
+                <p><b style="color: green;">Completed:</b> ${completed}</p>
+                <p><b style="color: red;">Cancelled:</b> ${cancelled}</p>
+            `;
+        }
+    } catch (err) {
+        content.innerHTML = `<p style="color: red;">Error loading data. Make sure the server is running.</p>`;
+    }
+}
+
+/* =========================
+   ADD ORDER & ADMIN MODALS
+========================= */
 function openModal() { document.getElementById("orderModal").style.display = "flex"; }
 
 async function addOrder() {
@@ -90,24 +175,6 @@ async function addOrder() {
     loadOrders();
 }
 
-async function generateReport(type) {
-    const res = await fetch('/api/orders');
-    const data = await res.json();
-    document.getElementById("reportOutputCard").style.display = "block";
-    
-    if(type === 'sales') {
-        let total = data.filter(o => o.status !== 'Cancelled').reduce((s, o) => Number(s) + Number(o.amount), 0);
-        document.getElementById("reportOutputTitle").innerText = "Sales Report";
-        document.getElementById("reportOutputContent").innerHTML = `<h3>Total Revenue: ₱${total.toLocaleString()}</h3>`;
-    } else {
-        document.getElementById("reportOutputTitle").innerText = "Order Report";
-        document.getElementById("reportOutputContent").innerHTML = `<h3>Total Orders: ${data.length}</h3>`;
-    }
-}
-
-/* =========================
-   ADMIN MANAGEMENT LOGIC
-========================= */
 function openAdminModal() {
     editAdminRow = null;
     document.getElementById("adminModalTitle").innerText = "Add New Admin";
@@ -120,7 +187,7 @@ function editAdmin(btn) {
     editAdminRow = btn.closest("tr");
     document.getElementById("adminModalTitle").innerText = "Edit Admin";
     document.getElementById("adminUsername").value = editAdminRow.cells[1].innerText;
-    document.getElementById("adminPassword").value = ""; // Leave blank to reset
+    document.getElementById("adminPassword").value = ""; 
     document.getElementById("adminRole").value = editAdminRow.cells[2].innerText;
     document.getElementById("adminModal").style.display = "flex";
 }
@@ -133,11 +200,9 @@ function saveAdmin() {
     if(!user || !pass) return alert("Please fill in all fields.");
 
     if(editAdminRow) {
-        // Update existing row
         editAdminRow.cells[1].innerText = user;
         editAdminRow.cells[2].innerText = role;
     } else {
-        // Add new row
         const tbody = document.querySelector("#adminTable tbody");
         const newRow = tbody.insertRow();
         newRow.innerHTML = `
