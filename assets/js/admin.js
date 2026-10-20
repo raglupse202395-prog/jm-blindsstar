@@ -1,5 +1,5 @@
 /* =========================
-   LOGIN
+   LOGIN & AUTHENTICATION
 ========================= */
 const LOGIN_USERNAME = "admin";
 const LOGIN_PASSWORD = "123456789";
@@ -17,14 +17,14 @@ loginForm.addEventListener("submit", function(event) {
         document.getElementById("dashboard").style.display = "block";
         message.style.display = "none";
         showNotification("Welcome to JM Blindsstar Dashboard!");
+        
+        // Load the inquiries as soon as we log in
+        loadInquiries(); 
     } else {
         message.style.display = "block";
     }
 });
 
-/* =========================
-   LOGOUT
-========================= */
 function logout() {
     document.getElementById("dashboard").style.display = "none";
     document.getElementById("loginPage").style.display = "flex";
@@ -34,25 +34,20 @@ function logout() {
 }
 
 /* =========================
-   SHOW SECTION
+   NAVIGATION & UI
 ========================= */
 function showSection(sectionId, element) {
     const sections = document.querySelectorAll(".section");
-    sections.forEach(function(section) {
-        section.classList.remove("active");
-    });
+    sections.forEach(function(section) { section.classList.remove("active"); });
     document.getElementById(sectionId).classList.add("active");
 
     const menuItems = document.querySelectorAll(".menu-item");
-    menuItems.forEach(function(item) {
-        item.classList.remove("active");
-    });
-    if (element) {
-        element.classList.add("active");
-    }
+    menuItems.forEach(function(item) { item.classList.remove("active"); });
+    if (element) { element.classList.add("active"); }
 
     const titles = {
         dashboardSection: "Dashboard",
+        inquiriesSection: "Customer Inquiries",
         customersSection: "Customers",
         ordersSection: "Orders",
         salesSection: "Sales",
@@ -60,14 +55,9 @@ function showSection(sectionId, element) {
         settingsSection: "Settings"
     };
     document.getElementById("pageTitle").textContent = titles[sectionId];
-
-    /* Close mobile sidebar */
     document.getElementById("sidebar").classList.remove("open");
 }
 
-/* =========================
-   SHOW SECTION BY ID
-========================= */
 function showSectionById(sectionId) {
     const menuItems = document.querySelectorAll(".menu-item");
     let targetItem = null;
@@ -79,27 +69,66 @@ function showSectionById(sectionId) {
     showSection(sectionId, targetItem);
 }
 
-/* =========================
-   MOBILE SIDEBAR
-========================= */
 function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("open");
 }
 
 /* =========================
-   ORDER MODAL
+   CUSTOMER INQUIRIES
+========================= */
+function loadInquiries() {
+    const inquiries = JSON.parse(localStorage.getItem("jm_inquiries")) || [];
+    const tbody = document.querySelector("#inquiriesTable tbody");
+    const badge = document.getElementById("inquiryBadge");
+
+    // Update the red notification badge
+    if (inquiries.length > 0) {
+        badge.style.display = "inline-block";
+        badge.textContent = inquiries.length;
+    } else {
+        badge.style.display = "none";
+    }
+
+    // Clear current table
+    tbody.innerHTML = "";
+
+    if (inquiries.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No new inquiries yet.</td></tr>";
+        return;
+    }
+
+    // Loop through saved inquiries and add them to the table
+    inquiries.reverse().forEach(function(inquiry) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${inquiry.date}</td>
+            <td><b>${inquiry.name}</b></td>
+            <td>${inquiry.phone}<br><small>${inquiry.email}</small></td>
+            <td>${inquiry.product}</td>
+            <td>${inquiry.message}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function clearInquiries() {
+    if(confirm("Are you sure you want to clear all inquiries?")) {
+        localStorage.removeItem("jm_inquiries");
+        loadInquiries();
+        showNotification("Inquiries cleared.");
+    }
+}
+
+/* =========================
+   ORDERS MODAL
 ========================= */
 function openModal() {
     document.getElementById("orderModal").classList.add("show");
 }
-
 function closeModal() {
     document.getElementById("orderModal").classList.remove("show");
 }
 
-/* =========================
-   ADD ORDER
-========================= */
 function addOrder() {
     const customer = document.getElementById("orderCustomer").value.trim();
     const product = document.getElementById("orderProduct").value;
@@ -123,11 +152,7 @@ function addOrder() {
         <td>${quantity}</td>
         <td>₱${Number(amount).toLocaleString()}</td>
         <td>${today}</td>
-        <td>
-            <span class="status pending">
-                Pending
-            </span>
-        </td>
+        <td><span class="status pending">Pending</span></td>
     `;
 
     closeModal();
@@ -138,7 +163,7 @@ function addOrder() {
 }
 
 /* =========================
-   ADMIN MANAGEMENT MODAL
+   ADMIN MANAGEMENT
 ========================= */
 let editMode = false;
 let editingRow = null;
@@ -165,16 +190,13 @@ function saveAdmin() {
     }
 
     if (editMode && editingRow) {
-        // Update existing row
         editingRow.cells[1].innerText = username;
         editingRow.cells[2].innerText = role;
         showNotification("Admin updated successfully!");
     } else {
-        // Add new row
         const table = document.getElementById("adminTable").getElementsByTagName('tbody')[0];
         const newRow = table.insertRow();
         const adminId = "ADM-" + String(table.rows.length + 1).padStart(2, "0");
-
         newRow.innerHTML = `
             <td>${adminId}</td>
             <td>${username}</td>
@@ -186,62 +208,49 @@ function saveAdmin() {
         `;
         showNotification("New admin added successfully!");
     }
-
     closeAdminModal();
 }
 
 function editAdmin(username, btnElement) {
-    // If called from the hardcoded HTML button, we find the row manually
     let row;
     if (btnElement) {
         row = btnElement.closest('tr');
     } else {
-        // This handles the hardcoded row in HTML
-        row = document.querySelector(`#adminTable tbody tr td:nth-child(2):contains('${username}')`).parentElement;
+        // Find row by searching for the username (used for hardcoded rows)
+        const rows = document.querySelectorAll("#adminTable tbody tr");
+        rows.forEach(r => {
+            if(r.cells[1].innerText === username) row = r;
+        });
     }
-
     if (!row) return;
 
     editMode = true;
     editingRow = row;
-
     document.getElementById("adminModalTitle").textContent = "Edit Admin";
     document.getElementById("newAdminUsername").value = row.cells[1].innerText;
     document.getElementById("newAdminRole").value = row.cells[2].innerText;
-    
     document.getElementById("adminModal").classList.add("show");
 }
 
 function deleteAdmin(btnElement) {
     if (confirm("Are you sure you want to delete this admin?")) {
-        const row = btnElement.closest('tr');
-        row.remove();
+        btnElement.closest('tr').remove();
         showNotification("Admin removed.");
     }
 }
 
 /* =========================
-   SEARCH TABLE
+   UTILITIES (SEARCH, SETTINGS, NOTIFICATION)
 ========================= */
 function searchTable(inputId, tableId) {
-    const input = document.getElementById(inputId);
-    const filter = input.value.toLowerCase();
-    const table = document.getElementById(tableId);
-    const rows = table.getElementsByTagName("tr");
-
+    const filter = document.getElementById(inputId).value.toLowerCase();
+    const rows = document.getElementById(tableId).getElementsByTagName("tr");
     for (let i = 1; i < rows.length; i++) {
         const text = rows[i].textContent.toLowerCase();
-        if (text.includes(filter)) {
-            rows[i].style.display = "";
-        } else {
-            rows[i].style.display = "none";
-        }
+        rows[i].style.display = text.includes(filter) ? "" : "none";
     }
 }
 
-/* =========================
-   SETTINGS
-========================= */
 function saveSettings() {
     const name = document.getElementById("businessName").value;
     if (name.trim() === "") {
@@ -251,16 +260,10 @@ function saveSettings() {
     showNotification("Business settings saved successfully!");
 }
 
-/* =========================
-   REPORTS
-========================= */
 function generateReport(type) {
     showNotification(type + " report is ready.");
 }
 
-/* =========================
-   NOTIFICATION
-========================= */
 function showNotification(message) {
     const notification = document.getElementById("notification");
     notification.textContent = message;
@@ -274,11 +277,8 @@ function showNotification(message) {
    CLOSE MODALS & ESC KEY
 ========================= */
 window.addEventListener("click", function(event) {
-    const orderModal = document.getElementById("orderModal");
-    const adminModal = document.getElementById("adminModal");
-    
-    if (event.target === orderModal) closeModal();
-    if (event.target === adminModal) closeAdminModal();
+    if (event.target === document.getElementById("orderModal")) closeModal();
+    if (event.target === document.getElementById("adminModal")) closeAdminModal();
 });
 
 document.addEventListener("keydown", function(event) {
