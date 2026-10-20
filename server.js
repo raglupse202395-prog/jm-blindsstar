@@ -11,14 +11,14 @@ app.use(express.json());
 // ==========================================
 // STATIC FILES & ROUTING
 // ==========================================
-// This serves your CSS, JS, and Images perfectly
 app.use(express.static(path.join(__dirname, 'public')));
 
-// THIS FIXES THE "Cannot GET /" ERROR
+// Fixes the "Cannot GET /" error for the customer homepage
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Serves the admin dashboard
 app.get(['/admin', '/admin/'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
@@ -26,7 +26,7 @@ app.get(['/admin', '/admin/'], (req, res) => {
 // ==========================================
 // POSTGRES DATABASE CONNECTION (SUPABASE)
 // ==========================================
-// PASTE YOUR ACTUAL LINK HERE!
+// ⚠️ REPLACE THIS WITH YOUR ACTUAL SUPABASE LINK!
 const connectionString = 'YOUR_SUPABASE_URI_HERE'; 
 
 const pool = new Pool({
@@ -46,7 +46,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'jmblindstar88@gmail.com', 
-        pass: 'YOUR_GMAIL_APP_PASSWORD' // PASTE YOUR 16-LETTER APP PASSWORD HERE
+        pass: 'abcdefghijklmnop' // ⚠️ REPLACE WITH YOUR 16-LETTER GOOGLE APP PASSWORD
     }
 });
 
@@ -57,8 +57,10 @@ app.post('/api/inquiries', async (req, res) => {
     const { name, phone, email, product, message } = req.body;
     
     try {
+        // 1. Save to Supabase Database
         await pool.query(`INSERT INTO inquiries (name, phone, email, product, message) VALUES ($1, $2, $3, $4, $5)`, [name, phone, email, product, message]);
         
+        // 2. Send Email Notification to Admin
         const mailOptions = {
             from: 'jmblindstar88@gmail.com',
             to: 'jmblindstar88@gmail.com', 
