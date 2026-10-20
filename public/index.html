@@ -527,7 +527,8 @@
                 alert("Thank you! Your inquiry has been sent. We will contact you soon.");
                 quoteForm.reset();
             } else {
-                alert("There was an error sending your message. Please try again.");
+                const errorData = await response.json();
+                alert("Database Error: " + errorData.error); // This will show us the EXACT problem
             }
         } catch (error) {
             console.error(error);
