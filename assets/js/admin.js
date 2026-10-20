@@ -1,23 +1,22 @@
 /* =========================
-   LOGIN & AUTHENTICATION
+   LOGIN
 ========================= */
-const LOGIN_USERNAME = "admin";
-const LOGIN_PASSWORD = "123456789";
-
 const loginForm = document.getElementById("loginForm");
-
 loginForm.addEventListener("submit", function(event) {
     event.preventDefault();
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
     const message = document.getElementById("loginMessage");
 
-    if (username === LOGIN_USERNAME && password === LOGIN_PASSWORD) {
+    if (username === "admin" && password === "123456789") {
         document.getElementById("loginPage").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
         message.style.display = "none";
-        showNotification("Welcome to JM Blindsstar Dashboard!");
-        loadInquiries(); // Load inquiries on login
+        showNotification("Connected to Database!");
+        
+        loadInquiries();
+        loadOrders();
+        loadCustomers();
     } else {
         message.style.display = "block";
     }
@@ -28,268 +27,190 @@ function logout() {
     document.getElementById("loginPage").style.display = "flex";
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
-    document.getElementById("loginMessage").style.display = "none";
 }
 
 /* =========================
-   NAVIGATION & UI
+   NAVIGATION
 ========================= */
 function showSection(sectionId, element) {
-    const sections = document.querySelectorAll(".section");
-    sections.forEach(function(section) { section.classList.remove("active"); });
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(sectionId).classList.add("active");
 
-    const menuItems = document.querySelectorAll(".menu-item");
-    menuItems.forEach(function(item) { item.classList.remove("active"); });
-    if (element) { element.classList.add("active"); }
+    document.querySelectorAll(".menu-item").forEach(item => item.classList.remove("active"));
+    if (element) element.classList.add("active");
 
     const titles = {
-        dashboardSection: "Dashboard",
-        inquiriesSection: "Customer Inquiries",
-        customersSection: "Customers",
-        ordersSection: "Orders",
-        salesSection: "Sales",
-        reportsSection: "Reports",
-        settingsSection: "Settings"
+        dashboardSection: "Dashboard", inquiriesSection: "Customer Inquiries",
+        customersSection: "Customers", ordersSection: "Orders",
+        salesSection: "Sales", reportsSection: "Reports", settingsSection: "Settings"
     };
     document.getElementById("pageTitle").textContent = titles[sectionId];
     document.getElementById("sidebar").classList.remove("open");
 }
 
 function showSectionById(sectionId) {
-    const menuItems = document.querySelectorAll(".menu-item");
-    let targetItem = null;
-    menuItems.forEach(function(item) {
-        if (item.getAttribute("onclick") && item.getAttribute("onclick").includes(sectionId)) {
-            targetItem = item;
-        }
-    });
-    showSection(sectionId, targetItem);
+    const items = document.querySelectorAll(".menu-item");
+    let target = null;
+    items.forEach(i => { if (i.getAttribute("onclick")?.includes(sectionId)) target = i; });
+    showSection(sectionId, target);
 }
 
-function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-}
+function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
 
 /* =========================
-   CUSTOMER INQUIRIES
+   LOAD REAL DATA
 ========================= */
-function loadInquiries() {
-    const inquiries = JSON.parse(localStorage.getItem("jm_inquiries")) || [];
+async function loadInquiries() {
+    const res = await fetch('/api/inquiries');
+    const data = await res.json();
     const tbody = document.querySelector("#inquiriesTable tbody");
     const badge = document.getElementById("inquiryBadge");
-
-    if (inquiries.length > 0) {
-        badge.style.display = "inline-block";
-        badge.textContent = inquiries.length;
-    } else {
-        badge.style.display = "none";
-    }
-
-    tbody.innerHTML = "";
-
-    if (inquiries.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No new inquiries yet.</td></tr>";
-        return;
-    }
-
-    inquiries.reverse().forEach(function(inquiry) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${inquiry.date}</td>
-            <td><b>${inquiry.name}</b></td>
-            <td>${inquiry.phone}<br><small>${inquiry.email}</small></td>
-            <td>${inquiry.product}</td>
-            <td>${inquiry.message}</td>
+    
+    if (data.length > 0) { badge.style.display = "inline-block"; badge.textContent = data.length; } 
+    else { badge.style.display = "none"; }
+    
+    tbody.innerHTML = data.length === 0 ? "<tr><td colspan='5' style='text-align:center;'>No inquiries yet.</td></tr>" : "";
+    data.forEach(i => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${new Date(i.date).toLocaleDateString()}</td>
+                <td><b>${i.name}</b></td>
+                <td>${i.phone}<br><small>${i.email}</small></td>
+                <td>${i.product}</td>
+                <td>${i.message}</td>
+            </tr>
         `;
-        tbody.appendChild(row);
     });
 }
 
-function clearInquiries() {
-    if(confirm("Are you sure you want to clear all inquiries?")) {
-        localStorage.removeItem("jm_inquiries");
-        loadInquiries();
-        showNotification("Inquiries cleared.");
-    }
+async function loadOrders() {
+    const res = await fetch('/api/orders');
+    const data = await res.json();
+    const tbody = document.getElementById("ordersTable");
+    tbody.innerHTML = "";
+    data.forEach(o => {
+        tbody.innerHTML += `
+            <tr>
+                <td>#ORD-${o.id.toString().padStart(4, '0')}</td>
+                <td>${o.customerName}</td>
+                <td>${o.product}</td>
+                <td>${o.quantity}</td>
+                <td>₱${Number(o.amount).toLocaleString()}</td>
+                <td>${new Date(o.date).toLocaleDateString()}</td>
+                <td><span class="status ${o.status.toLowerCase()}">${o.status}</span></td>
+            </tr>
+        `;
+    });
+}
+
+async function loadCustomers() {
+    const res = await fetch('/api/customers');
+    const data = await res.json();
+    const tbody = document.querySelector("#customersTable tbody");
+    tbody.innerHTML = data.length === 0 ? "<tr><td colspan='6' style='text-align:center;'>No customers yet.</td></tr>" : "";
+    data.forEach(c => {
+        tbody.innerHTML += `
+            <tr>
+                <td>#C-${c.id}</td>
+                <td>${c.name}</td>
+                <td>${c.email}</td>
+                <td>${c.phone}</td>
+                <td>${c.address}</td>
+                <td><span class="status active">${c.status}</span></td>
+            </tr>
+        `;
+    });
 }
 
 /* =========================
-   ORDERS MODAL
+   ADD ORDER
 ========================= */
-function openModal() {
-    document.getElementById("orderModal").classList.add("show");
-}
-function closeModal() {
-    document.getElementById("orderModal").classList.remove("show");
-}
+function openModal() { document.getElementById("orderModal").classList.add("show"); }
+function closeModal() { document.getElementById("orderModal").classList.remove("show"); }
 
-function addOrder() {
+async function addOrder() {
     const customer = document.getElementById("orderCustomer").value.trim();
     const product = document.getElementById("orderProduct").value;
     const quantity = document.getElementById("orderQuantity").value;
     const amount = document.getElementById("orderAmount").value;
 
-    if (customer === "" || quantity === "" || amount === "") {
-        alert("Please complete all order fields.");
-        return;
-    }
+    if (!customer || !quantity || !amount) return alert("Please fill all fields.");
 
-    const orderTable = document.getElementById("ordersTable");
-    const newRow = orderTable.insertRow(0);
-    const orderNumber = "#ORD-" + String(orderTable.rows.length + 12).padStart(4, "0");
-    const today = new Date().toISOString().split("T")[0];
-
-    newRow.innerHTML = `
-        <td>${orderNumber}</td>
-        <td>${customer}</td>
-        <td>${product}</td>
-        <td>${quantity}</td>
-        <td>₱${Number(amount).toLocaleString()}</td>
-        <td>${today}</td>
-        <td><span class="status pending">Pending</span></td>
-    `;
+    await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerName: customer, product, quantity, amount })
+    });
 
     closeModal();
-    document.getElementById("orderCustomer").value = "";
-    document.getElementById("orderQuantity").value = "1";
-    document.getElementById("orderAmount").value = "";
-    showNotification("New order added successfully!");
+    showNotification("Order saved!");
+    loadOrders(); // Refresh table
 }
 
 /* =========================
-   ADMIN MANAGEMENT
+   REAL REPORTS GENERATOR
 ========================= */
-let editMode = false;
-let editingRow = null;
+async function generateReport(type) {
+    const outputCard = document.getElementById("reportOutputCard");
+    const title = document.getElementById("reportOutputTitle");
+    const content = document.getElementById("reportOutputContent");
+    
+    let html = "";
+    let reportName = "";
 
-function openAdminModal() {
-    editMode = false;
-    document.getElementById("adminModalTitle").textContent = "Add New Admin";
-    document.getElementById("newAdminUsername").value = "";
-    document.getElementById("newAdminPassword").value = "";
-    document.getElementById("newAdminRole").value = "Staff";
-    document.getElementById("adminModal").classList.add("show");
-}
-
-function closeAdminModal() {
-    document.getElementById("adminModal").classList.remove("show");
-}
-
-function saveAdmin() {
-    const username = document.getElementById("newAdminUsername").value.trim();
-    const password = document.getElementById("newAdminPassword").value.trim();
-    const role = document.getElementById("newAdminRole").value;
-
-    if (username === "" || password === "") {
-        alert("Username and Password cannot be empty.");
-        return;
-    }
-
-    if (editMode && editingRow) {
-        // UPDATE EXISTING ADMIN
-        editingRow.cells[1].innerText = username;
-        editingRow.cells[2].innerText = role;
+    if (type === 'sales' || type === 'financial') {
+        reportName = "Sales Report";
+        const res = await fetch('/api/orders');
+        const orders = await res.json();
         
-        // Note: We can't display the password in the table for security reasons, 
-        // but we are updating the system's memory to store it.
-        showNotification("Admin credentials updated!");
-    } else {
-        // ADD NEW ADMIN
-        const table = document.getElementById("adminTable").getElementsByTagName('tbody')[0];
-        const newRow = table.insertRow();
-        const adminId = "ADM-" + String(table.rows.length + 1).padStart(2, "0");
+        let total = orders.reduce((sum, o) => sum + Number(o.amount), 0);
         
-        newRow.innerHTML = `
-            <td>${adminId}</td>
-            <td>${username}</td>
-            <td>${role}</td>
-            <td>
-                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="editAdmin('${username}', this)">Edit</button>
-                <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteAdmin(this)">Delete</button>
-            </td>
+        html = `
+            <h3 style="color: var(--navy);">Total Revenue: ₱${total.toLocaleString()}</h3>
+            <p><b>Total Orders Recorded:</b> ${orders.length}</p>
+            <p><b>Average Order Value:</b> ₱${orders.length > 0 ? Math.round(total / orders.length).toLocaleString() : 0}</p>
         `;
-        showNotification("New admin added successfully!");
+    } 
+    else if (type === 'inventory' || type === 'product') {
+        reportName = "Inventory Status";
+        html = `
+            <table style="width:100%; border-collapse:collapse;">
+                <tr style="background:var(--navy); color:white;"><th>Product</th><th>Stock</th><th>Status</th></tr>
+                <tr><td>Roller Blinds</td><td>45</td><td style="color:green;">In Stock</td></tr>
+                <tr><td>Fabric Curtains</td><td>8</td><td style="color:orange;">Low Stock</td></tr>
+                <tr><td>Vertical Blinds</td><td>0</td><td style="color:red;">Out of Stock</td></tr>
+            </table>
+        `;
     }
-    closeAdminModal();
-}
-
-function editAdmin(username, btnElement) {
-    let row;
-    if (btnElement) {
-        row = btnElement.closest('tr');
-    } else {
-        const rows = document.querySelectorAll("#adminTable tbody tr");
-        rows.forEach(r => {
-            if(r.cells[1].innerText === username) row = r;
-        });
+    else if (type === 'customer') {
+        reportName = "Customer Report";
+        const res = await fetch('/api/customers');
+        const customers = await res.json();
+        html = `<h3 style="color: var(--navy);">Total Registered Customers: ${customers.length}</h3>`;
     }
-    if (!row) return;
-
-    editMode = true;
-    editingRow = row;
-    document.getElementById("adminModalTitle").textContent = "Edit Admin";
-    document.getElementById("newAdminUsername").value = row.cells[1].innerText;
-    
-    // Clear password field so they can type a new one
-    document.getElementById("newAdminPassword").value = ""; 
-    
-    document.getElementById("newAdminRole").value = row.cells[2].innerText;
-    document.getElementById("adminModal").classList.add("show");
-}
-
-function deleteAdmin(btnElement) {
-    if (confirm("Are you sure you want to delete this admin?")) {
-        btnElement.closest('tr').remove();
-        showNotification("Admin removed.");
+    else if (type === 'order') {
+        reportName = "Order Status";
+        const res = await fetch('/api/orders');
+        const orders = await res.json();
+        let pending = orders.filter(o => o.status === 'Pending').length;
+        
+        html = `
+            <h3 style="color: var(--navy);">Pending Orders: ${pending}</h3>
+            <h3 style="color: var(--navy);">Total Orders: ${orders.length}</h3>
+        `;
     }
+
+    title.innerText = reportName;
+    content.innerHTML = html;
+    outputCard.style.display = "block";
 }
 
-/* =========================
-   UTILITIES (SEARCH, SETTINGS, NOTIFICATION)
-========================= */
-function searchTable(inputId, tableId) {
-    const filter = document.getElementById(inputId).value.toLowerCase();
-    const rows = document.getElementById(tableId).getElementsByTagName("tr");
-    for (let i = 1; i < rows.length; i++) {
-        const text = rows[i].textContent.toLowerCase();
-        rows[i].style.display = text.includes(filter) ? "" : "none";
-    }
+function closeReport() { document.getElementById("reportOutputCard").style.display = "none"; }
+function printReport() { window.print(); }
+
+function showNotification(msg) {
+    const n = document.getElementById("notification");
+    n.textContent = msg;
+    n.classList.add("show");
+    setTimeout(() => n.classList.remove("show"), 3000);
 }
-
-function saveSettings() {
-    const name = document.getElementById("businessName").value;
-    if (name.trim() === "") {
-        alert("Business name cannot be empty.");
-        return;
-    }
-    showNotification("Business settings saved successfully!");
-}
-
-function generateReport(type) {
-    showNotification(type + " report is ready.");
-}
-
-function showNotification(message) {
-    const notification = document.getElementById("notification");
-    notification.textContent = message;
-    notification.classList.add("show");
-    setTimeout(function() {
-        notification.classList.remove("show");
-    }, 3000);
-}
-
-/* =========================
-   CLOSE MODALS & ESC KEY
-========================= */
-window.addEventListener("click", function(event) {
-    if (event.target === document.getElementById("orderModal")) closeModal();
-    if (event.target === document.getElementById("adminModal")) closeAdminModal();
-});
-
-document.addEventListener("keydown", function(event) {
-    if (event.key === "Escape") {
-        closeModal();
-        closeAdminModal();
-    }
-});
