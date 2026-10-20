@@ -24,7 +24,7 @@ app.get(['/admin', '/admin/'], (req, res) => {
 // POSTGRES DATABASE CONNECTION (SUPABASE)
 // ==========================================
 // ⚠️ MAKE SURE YOUR ACTUAL SUPABASE LINK IS HERE
-const connectionString = 'YOUR_SUPABASE_URI_HERE'; 
+const connectionString = postgresql://postgres.mgqkpylfucamnfmrknai:raglupse202395@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres; 
 
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 pool.connect((err) => {
