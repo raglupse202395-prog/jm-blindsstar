@@ -27,6 +27,7 @@
 <div class="dashboard" id="dashboard">
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
+            <!-- Fixed the image path here -->
             <img src="/images/logo.jpg" alt="JM Blindsstar Logo">
         </div>
         <div class="sidebar-menu">
@@ -57,7 +58,7 @@
         </header>
 
         <div class="content">
-            <!-- DASHBOARD SECTION (Stats Restored) -->
+            <!-- DASHBOARD SECTION -->
             <section id="dashboardSection" class="section active">
                 <div class="section-heading">
                     <h2>Business Dashboard</h2>
@@ -143,16 +144,44 @@
                 </div>
             </section>
 
-            <!-- SETTINGS (Restored) -->
+            <!-- SETTINGS & ADMIN MANAGEMENT (Restored) -->
             <section id="settingsSection" class="section">
-                <div class="section-heading"><h2>Settings</h2><p>Manage your business information.</p></div>
+                <div class="section-heading"><h2>Settings</h2><p>Manage your business information and administrator accounts.</p></div>
                 <div class="settings-grid">
                     <div class="card">
                         <div class="card-header"><div class="card-title">⚙️ Business Information</div></div>
                         <div class="form-group"><label>Business Name</label><input type="text" class="form-control" value="JM Blindsstar Window Blinds Trading" readonly></div>
                         <div class="form-group"><label>Address</label><input type="text" class="form-control" value="Rm. 503 Marietta Tower, Poblacion, Iligan City" readonly></div>
-                        <div class="form-group"><label>Phone</label><input type="text" class="form-control" value="09776710701 / 09457056788" readonly></div>
-                        <div class="form-group"><label>Email</label><input type="text" class="form-control" value="jmblindstar88@gmail.com" readonly></div>
+                    </div>
+
+                    <!-- ADMIN MANAGEMENT IS BACK -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🔐 Admin Management</div>
+                            <button class="btn btn-primary" onclick="openAdminModal()">+ Add Admin</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="adminTable">
+                                <thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                    <tr>
+                                        <td>ADM-01</td>
+                                        <td>admin</td>
+                                        <td>Super Admin</td>
+                                        <td><button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="editAdmin(this)">Edit</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>ADM-02</td>
+                                        <td>staff_jm</td>
+                                        <td>Staff</td>
+                                        <td>
+                                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="editAdmin(this)">Edit</button>
+                                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteAdmin(this)">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -170,6 +199,23 @@
         <div class="form-group"><label>Amount</label><input type="number" id="orderAmount" class="form-control"></div>
         <button onclick="addOrder()" class="btn btn-primary">Save</button>
         <button onclick="document.getElementById('orderModal').style.display='none'" class="btn btn-secondary">Cancel</button>
+    </div>
+</div>
+
+<!-- ADD ADMIN MODAL -->
+<div class="modal" id="adminModal">
+    <div class="modal-box">
+        <div class="modal-header"><h2 id="adminModalTitle">Add New Admin</h2><button class="close-modal" onclick="document.getElementById('adminModal').style.display='none'">×</button></div>
+        <div class="form-group"><label>Username</label><input type="text" id="adminUsername" class="form-control"></div>
+        <div class="form-group"><label>Password</label><input type="text" id="adminPassword" class="form-control"></div>
+        <div class="form-group"><label>Role</label>
+            <select id="adminRole" class="form-control">
+                <option value="Staff">Staff</option>
+                <option value="Super Admin">Super Admin</option>
+            </select>
+        </div>
+        <button onclick="saveAdmin()" class="btn btn-primary">Save Admin</button>
+        <button onclick="document.getElementById('adminModal').style.display='none'" class="btn btn-secondary">Cancel</button>
     </div>
 </div>
 

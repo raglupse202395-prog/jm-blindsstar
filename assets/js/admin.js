@@ -1,4 +1,5 @@
 const loginForm = document.getElementById("loginForm");
+let editAdminRow = null; // Tracks if we are editing or adding
 
 loginForm.addEventListener("submit", function(event) {
     event.preventDefault();
@@ -95,11 +96,65 @@ async function generateReport(type) {
     document.getElementById("reportOutputCard").style.display = "block";
     
     if(type === 'sales') {
-        let total = data.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + Number(o.amount), 0);
+        let total = data.filter(o => o.status !== 'Cancelled').reduce((s, o) => Number(s) + Number(o.amount), 0);
         document.getElementById("reportOutputTitle").innerText = "Sales Report";
         document.getElementById("reportOutputContent").innerHTML = `<h3>Total Revenue: ₱${total.toLocaleString()}</h3>`;
     } else {
         document.getElementById("reportOutputTitle").innerText = "Order Report";
         document.getElementById("reportOutputContent").innerHTML = `<h3>Total Orders: ${data.length}</h3>`;
+    }
+}
+
+/* =========================
+   ADMIN MANAGEMENT LOGIC
+========================= */
+function openAdminModal() {
+    editAdminRow = null;
+    document.getElementById("adminModalTitle").innerText = "Add New Admin";
+    document.getElementById("adminUsername").value = "";
+    document.getElementById("adminPassword").value = "";
+    document.getElementById("adminModal").style.display = "flex";
+}
+
+function editAdmin(btn) {
+    editAdminRow = btn.closest("tr");
+    document.getElementById("adminModalTitle").innerText = "Edit Admin";
+    document.getElementById("adminUsername").value = editAdminRow.cells[1].innerText;
+    document.getElementById("adminPassword").value = ""; // Leave blank to reset
+    document.getElementById("adminRole").value = editAdminRow.cells[2].innerText;
+    document.getElementById("adminModal").style.display = "flex";
+}
+
+function saveAdmin() {
+    const user = document.getElementById("adminUsername").value;
+    const pass = document.getElementById("adminPassword").value;
+    const role = document.getElementById("adminRole").value;
+
+    if(!user || !pass) return alert("Please fill in all fields.");
+
+    if(editAdminRow) {
+        // Update existing row
+        editAdminRow.cells[1].innerText = user;
+        editAdminRow.cells[2].innerText = role;
+    } else {
+        // Add new row
+        const tbody = document.querySelector("#adminTable tbody");
+        const newRow = tbody.insertRow();
+        newRow.innerHTML = `
+            <td>ADM-0${tbody.rows.length + 1}</td>
+            <td>${user}</td>
+            <td>${role}</td>
+            <td>
+                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="editAdmin(this)">Edit</button>
+                <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteAdmin(this)">Delete</button>
+            </td>
+        `;
+    }
+    document.getElementById("adminModal").style.display = "none";
+}
+
+function deleteAdmin(btn) {
+    if(confirm("Delete this admin?")) {
+        btn.closest("tr").remove();
     }
 }
