@@ -2,45 +2,34 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
-const nodemailer = require('nodemailer'); 
 
 const app = express();
 app.use(cors());
 app.use(express.json()); 
 
-// ==========================================
-// BULLETPROOF STATIC ROUTING
-// ==========================================
-// This serves EVERYTHING from the root folder so CSS/JS always load
+// Serve static files (CSS, JS, Images)
 app.use(express.static(__dirname)); 
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Customer Homepage
+// Routes for Customer Home and Admin Dashboard
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Admin Dashboard (Fixes the unstyled issue)
 app.get(['/admin', '/admin/'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
 
 // ==========================================
-// DATABASE & EMAIL
+// POSTGRES DATABASE CONNECTION (SUPABASE)
 // ==========================================
-const connectionString = 'YOUR_SUPABASE_URI_HERE'; // ⚠️ PASTE LINK HERE
+// ⚠️ MAKE SURE YOUR ACTUAL SUPABASE LINK IS HERE
+const connectionString = 'YOUR_SUPABASE_URI_HERE'; 
 
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 pool.connect((err) => {
     if (err) console.error('❌ DB Error:', err.message);
     else console.log('✅ Connected to Supabase!');
-});
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'jmblindstar88@gmail.com', 
-        pass: 'YOUR_GMAIL_APP_PASSWORD' // ⚠️ PASTE APP PASSWORD HERE
-    }
 });
 
 // ==========================================
@@ -49,14 +38,23 @@ const transporter = nodemailer.createTransport({
 app.post('/api/inquiries', async (req, res) => {
     const { name, phone, email, product, message } = req.body;
     try {
+        // 1. Save to Supabase Database (THIS IS THE IMPORTANT PART)
         await pool.query(`INSERT INTO inquiries (name, phone, email, product, message) VALUES ($1, $2, $3, $4, $5)`, [name, phone, email, product, message]);
+        
+        // 2. EMAIL PART IS COMMENTED OUT SO IT DOES NOT CRASH
+        /*
         transporter.sendMail({
             from: 'jmblindstar88@gmail.com', to: 'jmblindstar88@gmail.com', 
             subject: `🚨 NEW QUOTE: ${name} - ${product}`,
             html: `<p><b>Name:</b> ${name}</p><p><b>Phone:</b> ${phone}</p><p><b>Email:</b> ${email}</p><p><b>Product:</b> ${product}</p><p><b>Message:</b> ${message}</p>`
         }, (error) => { if (error) console.log("Email Error:", error); });
+        */
+        
         res.status(201).json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) { 
+        console.error("Database Error:", err.message);
+        res.status(500).json({ error: err.message }); 
+    }
 });
 
 app.get('/api/inquiries', async (req, res) => {
