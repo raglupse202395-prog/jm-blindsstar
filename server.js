@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 
 const app = express();
 app.use(cors());
@@ -9,97 +9,95 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// DATABASE SETUP (SQLITE)
+// POSTGRES DATABASE CONNECTION (SUPABASE)
 // ==========================================
-const db = new sqlite3.Database('./database.sqlite', (err) => {
-    if (err) console.error('❌ Database error:', err.message);
-    else console.log('✅ Connected to Local SQLite Database!');
+// REPLACE THE LINK BELOW WITH YOUR SUPABASE URI!
+const connectionString = 'YOUR_SUPABASE_URI_HERE'; 
+
+const pool = new Pool({
+    connectionString: connectionString,
+    ssl: { rejectUnauthorized: false }
 });
 
-db.serialize(() => {
-    // Inquiries Table
-    db.run(`CREATE TABLE IF NOT EXISTS inquiries (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT, phone TEXT, email TEXT, product TEXT, message TEXT, date TEXT
-    )`);
-
-    // Orders Table
-    db.run(`CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customerName TEXT, product TEXT, quantity INTEGER, amount REAL, status TEXT, date TEXT
-    )`);
-
-    // Customers Table
-    db.run(`CREATE TABLE IF NOT EXISTS customers (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT, email TEXT, phone TEXT, address TEXT, status TEXT
-    )`);
+pool.connect((err) => {
+    if (err) console.error('❌ Database error:', err.message);
+    else console.log('✅ Connected to Supabase PostgreSQL Database!');
 });
 
 // ==========================================
 // API ROUTES
 // ==========================================
-
-// Inquiries
-app.post('/api/inquiries', (req, res) => {
+app.post('/api/inquiries', async (req, res) => {
     const { name, phone, email, product, message } = req.body;
-    const date = new Date().toISOString();
-    db.run(`INSERT INTO inquiries (name, phone, email, product, message, date) VALUES (?, ?, ?, ?, ?, ?)`,
-        [name, phone, email, product, message, date],
-        function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ success: true, message: "Inquiry saved!" });
-        }
-    );
+    try {
+        await pool.query(
+            `INSERT INTO inquiries (name, phone, email, product, message) VALUES ($1, $2, $3, $4, $5)`,
+            [name, phone, email, product, message]
+        );
+        res.status(201).json({ success: true, message: "Inquiry saved!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get('/api/inquiries', (req, res) => {
-    db.all(`SELECT * FROM inquiries ORDER BY id DESC`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(200).json(rows);
-    });
+app.get('/api/inquiries', async (req, res) => {
+    try {
+        const result = await pool.query(`SELECT * FROM inquiries ORDER BY id DESC`);
+        res.status(200).json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// Orders
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
     const { customerName, product, quantity, amount } = req.body;
-    const date = new Date().toISOString();
-    const status = 'Pending';
-    db.run(`INSERT INTO orders (customerName, product, quantity, amount, status, date) VALUES (?, ?, ?, ?, ?, ?)`,
-        [customerName, product, quantity, amount, status, date],
-        function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ success: true, message: "Order saved!" });
-        }
-    );
+    try {
+        await pool.query(
+            `INSERT INTO orders (customerName, product, quantity, amount, status) VALUES ($1, $2, $3, $4, 'Pending')`,
+            [customerName, product, quantity, amount]
+        );
+        res.status(201).json({ success: true, message: "Order saved!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get('/api/orders', (req, res) => {
-    db.all(`SELECT * FROM orders ORDER BY id DESC`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(200).json(rows);
-    });
+app.get('/api/orders', async (req, res) => {
+    try {
+        const result = await pool.query(`SELECT * FROM orders ORDER BY id DESC`);
+        res.status(200).json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// Customers
-app.get('/api/customers', (req, res) => {
-    db.all(`SELECT * FROM customers ORDER BY id DESC`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(200).json(rows);
-    });
+// NEW ROUTE: Cancel an order
+app.put('/api/orders/:id/cancel', async (req, res) => {
+    const orderId = req.params.id;
+    try {
+        await pool.query(
+            `UPDATE orders SET status = 'Cancelled' WHERE id = $1`,
+            [orderId]
+        );
+        res.status(200).json({ success: true, message: "Order cancelled." });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// ==========================================
-// ROUTING
-// ==========================================
-// This handles /admin and /admin/ perfectly so CSS loads every time
+app.get('/api/customers', async (req, res) => {
+    try {
+        const result = await pool.query(`SELECT * FROM customers ORDER BY id DESC`);
+        res.status(200).json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get(['/admin', '/admin/'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
 
-// ==========================================
-// START SERVER
-// ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

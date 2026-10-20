@@ -1,7 +1,8 @@
 /* =========================
-   LOGIN
+   LOGIN & AUTHENTICATION
 ========================= */
 const loginForm = document.getElementById("loginForm");
+
 loginForm.addEventListener("submit", function(event) {
     event.preventDefault();
     const username = document.getElementById("username").value.trim();
@@ -30,7 +31,7 @@ function logout() {
 }
 
 /* =========================
-   NAVIGATION
+   NAVIGATION & UI
 ========================= */
 function showSection(sectionId, element) {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
@@ -48,17 +49,10 @@ function showSection(sectionId, element) {
     document.getElementById("sidebar").classList.remove("open");
 }
 
-function showSectionById(sectionId) {
-    const items = document.querySelectorAll(".menu-item");
-    let target = null;
-    items.forEach(i => { if (i.getAttribute("onclick")?.includes(sectionId)) target = i; });
-    showSection(sectionId, target);
-}
-
 function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); }
 
 /* =========================
-   LOAD REAL DATA
+   REAL DATA FETCHING
 ========================= */
 async function loadInquiries() {
     const res = await fetch('/api/inquiries');
@@ -88,16 +82,23 @@ async function loadOrders() {
     const data = await res.json();
     const tbody = document.getElementById("ordersTable");
     tbody.innerHTML = "";
+    
     data.forEach(o => {
+        let actionBtn = "-";
+        if (o.status !== 'Cancelled' && o.status !== 'Completed') {
+            actionBtn = `<button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="cancelOrder(${o.id})">Cancel</button>`;
+        }
+
         tbody.innerHTML += `
             <tr>
                 <td>#ORD-${o.id.toString().padStart(4, '0')}</td>
-                <td>${o.customerName}</td>
+                <td>${o.customername || o.customerName}</td>
                 <td>${o.product}</td>
                 <td>${o.quantity}</td>
                 <td>₱${Number(o.amount).toLocaleString()}</td>
                 <td>${new Date(o.date).toLocaleDateString()}</td>
                 <td><span class="status ${o.status.toLowerCase()}">${o.status}</span></td>
+                <td>${actionBtn}</td>
             </tr>
         `;
     });
@@ -123,7 +124,7 @@ async function loadCustomers() {
 }
 
 /* =========================
-   ADD ORDER
+   ACTIONS (ADD & CANCEL)
 ========================= */
 function openModal() { document.getElementById("orderModal").classList.add("show"); }
 function closeModal() { document.getElementById("orderModal").classList.remove("show"); }
@@ -143,12 +144,32 @@ async function addOrder() {
     });
 
     closeModal();
-    showNotification("Order saved!");
-    loadOrders(); // Refresh table
+    showNotification("Order saved to database!");
+    loadOrders(); 
+}
+
+async function cancelOrder(orderId) {
+    if (confirm("Are you sure you want to cancel this order?")) {
+        try {
+            const response = await fetch(`/api/orders/${orderId}/cancel`, {
+                method: 'PUT'
+            });
+            
+            if (response.ok) {
+                showNotification("Order cancelled successfully.");
+                loadOrders(); 
+            } else {
+                alert("Failed to cancel order.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error connecting to server.");
+        }
+    }
 }
 
 /* =========================
-   REAL REPORTS GENERATOR
+   REPORTS GENERATOR
 ========================= */
 async function generateReport(type) {
     const outputCard = document.getElementById("reportOutputCard");
@@ -158,20 +179,16 @@ async function generateReport(type) {
     let html = "";
     let reportName = "";
 
-    if (type === 'sales' || type === 'financial') {
+    if (type === 'sales') {
         reportName = "Sales Report";
         const res = await fetch('/api/orders');
         const orders = await res.json();
+        let validOrders = orders.filter(o => o.status !== 'Cancelled');
+        let total = validOrders.reduce((sum, o) => sum + Number(o.amount), 0);
         
-        let total = orders.reduce((sum, o) => sum + Number(o.amount), 0);
-        
-        html = `
-            <h3 style="color: var(--navy);">Total Revenue: ₱${total.toLocaleString()}</h3>
-            <p><b>Total Orders Recorded:</b> ${orders.length}</p>
-            <p><b>Average Order Value:</b> ₱${orders.length > 0 ? Math.round(total / orders.length).toLocaleString() : 0}</p>
-        `;
+        html = `<h3 style="color: var(--navy);">Total Revenue: ₱${total.toLocaleString()}</h3><p><b>Total Valid Orders:</b> ${validOrders.length}</p>`;
     } 
-    else if (type === 'inventory' || type === 'product') {
+    else if (type === 'inventory') {
         reportName = "Inventory Status";
         html = `
             <table style="width:100%; border-collapse:collapse;">
@@ -179,25 +196,24 @@ async function generateReport(type) {
                 <tr><td>Roller Blinds</td><td>45</td><td style="color:green;">In Stock</td></tr>
                 <tr><td>Fabric Curtains</td><td>8</td><td style="color:orange;">Low Stock</td></tr>
                 <tr><td>Vertical Blinds</td><td>0</td><td style="color:red;">Out of Stock</td></tr>
-            </table>
-        `;
+            </table>`;
     }
     else if (type === 'customer') {
         reportName = "Customer Report";
         const res = await fetch('/api/customers');
         const customers = await res.json();
-        html = `<h3 style="color: var(--navy);">Total Registered Customers: ${customers.length}</h3>`;
+        html = `<h3 style="color: var(--navy);">Total Customers: ${customers.length}</h3>`;
     }
     else if (type === 'order') {
         reportName = "Order Status";
         const res = await fetch('/api/orders');
         const orders = await res.json();
         let pending = orders.filter(o => o.status === 'Pending').length;
-        
+        let cancelled = orders.filter(o => o.status === 'Cancelled').length;
         html = `
             <h3 style="color: var(--navy);">Pending Orders: ${pending}</h3>
-            <h3 style="color: var(--navy);">Total Orders: ${orders.length}</h3>
-        `;
+            <h3 style="color: var(--red);">Cancelled Orders: ${cancelled}</h3>
+            <h3 style="color: var(--navy);">Total Orders: ${orders.length}</h3>`;
     }
 
     title.innerText = reportName;

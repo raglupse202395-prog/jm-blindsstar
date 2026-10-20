@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JM Blindsstar Business Dashboard</title>
-    <!-- Fixed path to CSS -->
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body>
 
+<!-- LOGIN PAGE -->
 <div class="login-page" id="loginPage">
     <div class="login-box">
-        <img src="../images/logo.jpg" alt="JM Blindsstar" class="login-logo">
+        <img src="/images/logo.jpg" alt="JM Blindsstar Window Blinds Trading" class="login-logo">
         <div class="login-title">Business Management Dashboard</div>
         <form id="loginForm">
             <input type="text" id="username" class="login-input" placeholder="Username" required>
@@ -22,19 +22,41 @@
     </div>
 </div>
 
+<!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-logo"><img src="../images/logo.jpg" alt="Logo"></div>
+        <div class="sidebar-logo">
+            <img src="/images/logo.jpg" alt="JM Blindsstar Logo">
+        </div>
         <div class="sidebar-menu">
             <div class="menu-title">Main Menu</div>
-            <a class="menu-item active" onclick="showSection('dashboardSection', this)"><span class="menu-icon">🏠</span> Dashboard</a>
-            <a class="menu-item" onclick="showSection('inquiriesSection', this)"><span class="menu-icon">📩</span> Inquiries <span id="inquiryBadge" style="display:none; background:red; color:white; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:auto;">0</span></a>
-            <a class="menu-item" onclick="showSection('customersSection', this)"><span class="menu-icon">👥</span> Customers</a>
-            <a class="menu-item" onclick="showSection('ordersSection', this)"><span class="menu-icon">🛒</span> Orders</a>
-            <a class="menu-item" onclick="showSection('salesSection', this)"><span class="menu-icon">₱</span> Sales</a>
-            <a class="menu-item" onclick="showSection('reportsSection', this)"><span class="menu-icon">📊</span> Reports</a>
-            <a class="menu-item" onclick="showSection('settingsSection', this)"><span class="menu-icon">⚙️</span> Settings</a>
-            <div class="logout-menu"><a class="menu-item" onclick="logout()"><span class="menu-icon">🚪</span> Logout</a></div>
+            <a class="menu-item active" onclick="showSection('dashboardSection', this)">
+                <span class="menu-icon">🏠</span> Dashboard
+            </a>
+            <a class="menu-item" onclick="showSection('inquiriesSection', this)">
+                <span class="menu-icon">📩</span> Inquiries 
+                <span id="inquiryBadge" style="display:none; background:red; color:white; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:auto;">0</span>
+            </a>
+            <a class="menu-item" onclick="showSection('customersSection', this)">
+                <span class="menu-icon">👥</span> Customers
+            </a>
+            <a class="menu-item" onclick="showSection('ordersSection', this)">
+                <span class="menu-icon">🛒</span> Orders
+            </a>
+            <a class="menu-item" onclick="showSection('salesSection', this)">
+                <span class="menu-icon">₱</span> Sales
+            </a>
+            <a class="menu-item" onclick="showSection('reportsSection', this)">
+                <span class="menu-icon">📊</span> Reports
+            </a>
+            <a class="menu-item" onclick="showSection('settingsSection', this)">
+                <span class="menu-icon">⚙️</span> Settings
+            </a>
+            <div class="logout-menu">
+                <a class="menu-item" onclick="logout()">
+                    <span class="menu-icon">🚪</span> Logout
+                </a>
+            </div>
         </div>
     </aside>
 
@@ -44,13 +66,19 @@
                 <button class="mobile-menu" onclick="toggleSidebar()">☰</button>
                 <div class="page-title" id="pageTitle">Dashboard</div>
             </div>
-            <div class="admin-profile"><div class="admin-avatar">A</div><div><b>Admin</b></div></div>
+            <div class="admin-profile">
+                <div class="admin-avatar">A</div>
+                <div><b>Admin</b></div>
+            </div>
         </header>
 
         <div class="content">
-            <!-- DASHBOARD -->
+            <!-- DASHBOARD SECTION -->
             <section id="dashboardSection" class="section active">
-                <div class="section-heading"><h2>Business Dashboard</h2><p>Welcome to JM Blindsstar.</p></div>
+                <div class="section-heading">
+                    <h2>Business Dashboard</h2>
+                    <p>Welcome to JM Blindsstar Window Blinds Trading.</p>
+                </div>
                 <div class="card-grid">
                     <div class="card stat-card"><div class="stat-icon">👥</div><div><div class="stat-title">Total Customers</div><div class="stat-number">250</div><div class="stat-change">↑ Growing</div></div></div>
                     <div class="card stat-card"><div class="stat-icon">🛒</div><div><div class="stat-title">Total Orders</div><div class="stat-number">128</div><div class="stat-change">↑ Growing</div></div></div>
@@ -59,35 +87,43 @@
                 </div>
             </section>
 
-            <!-- INQUIRIES -->
+            <!-- INQUIRIES SECTION -->
             <section id="inquiriesSection" class="section">
-                <div class="section-heading"><h2>Customer Inquiries</h2><p>Quote requests from the website.</p></div>
+                <div class="section-heading">
+                    <h2>Customer Inquiries</h2>
+                    <p>Quote requests submitted from the main website.</p>
+                </div>
                 <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Recent Requests</div>
+                    </div>
                     <div class="table-container">
                         <table id="inquiriesTable">
-                            <thead><tr><th>Date</th><th>Name</th><th>Contact</th><th>Product</th><th>Message</th></tr></thead>
+                            <thead>
+                                <tr><th>Date</th><th>Name</th><th>Contact</th><th>Product</th><th>Message</th></tr>
+                            </thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
-            <!-- CUSTOMERS -->
+            <!-- CUSTOMERS SECTION -->
             <section id="customersSection" class="section">
-                <div class="section-heading"><h2>Customers</h2><p>Manage records.</p></div>
+                <div class="section-heading"><h2>Customers</h2><p>Manage your customer records.</p></div>
                 <div class="card">
                     <div class="table-container">
                         <table id="customersTable">
-                            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Status</th></tr></thead>
+                            <thead><tr><th>ID</th><th>Customer Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Status</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
-            <!-- ORDERS -->
+            <!-- ORDERS SECTION -->
             <section id="ordersSection" class="section">
-                <div class="section-heading"><h2>Orders</h2><p>Manage orders.</p></div>
+                <div class="section-heading"><h2>Orders</h2><p>Manage customer orders and order status.</p></div>
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">Order Management</div>
@@ -95,32 +131,41 @@
                     </div>
                     <div class="table-container">
                         <table>
-                            <thead><tr><th>Order No.</th><th>Customer</th><th>Product</th><th>Qty</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Order No.</th><th>Customer</th><th>Product</th>
+                                    <th>Quantity</th><th>Amount</th><th>Date</th>
+                                    <th>Status</th><th>Action</th>
+                                </tr>
+                            </thead>
                             <tbody id="ordersTable"></tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
-            <!-- SALES -->
+            <!-- SALES SECTION -->
             <section id="salesSection" class="section">
-                <div class="section-heading"><h2>Sales Records</h2><p>Transactions.</p></div>
-                <div class="card"><p>Sales data is shown in Reports.</p></div>
+                <div class="section-heading"><h2>Sales Records</h2><p>View your sales transactions.</p></div>
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Date</th><th>Order No.</th><th>Product</th><th>Quantity</th><th>Customer</th><th>Total</th></tr></thead>
+                            <tbody id="salesTable"></tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
 
-            <!-- REPORTS -->
+            <!-- REPORTS SECTION -->
             <section id="reportsSection" class="section">
-                <div class="section-heading"><h2>Reports</h2><p>Generate real-time reports.</p></div>
+                <div class="section-heading"><h2>Reports</h2><p>Generate business reports.</p></div>
                 <div class="report-grid">
-                    <div class="report-card"><div class="report-icon">📊</div><h3>Sales Report</h3><p>Total revenue and orders.</p><button class="btn btn-primary" onclick="generateReport('sales')">Generate</button></div>
-                    <div class="report-card"><div class="report-icon">📦</div><h3>Inventory</h3><p>Product stock levels.</p><button class="btn btn-primary" onclick="generateReport('inventory')">View</button></div>
-                    <div class="report-card"><div class="report-icon">👥</div><h3>Customers</h3><p>Total customer count.</p><button class="btn btn-primary" onclick="generateReport('customer')">Generate</button></div>
-                    <div class="report-card"><div class="report-icon">🛒</div><h3>Orders</h3><p>Pending vs Completed.</p><button class="btn btn-primary" onclick="generateReport('order')">Generate</button></div>
-                    <div class="report-card"><div class="report-icon">🪟</div><h3>Products</h3><p>Best selling blinds.</p><button class="btn btn-primary" onclick="generateReport('product')">View</button></div>
-                    <div class="report-card"><div class="report-icon">💰</div><h3>Financial</h3><p>Overall performance.</p><button class="btn btn-gold" onclick="generateReport('financial')">View</button></div>
+                    <div class="report-card"><div class="report-icon">📊</div><h3>Sales Report</h3><p>View monthly sales performance, orders and total revenue.</p><button class="btn btn-primary" onclick="generateReport('sales')">Generate Report</button></div>
+                    <div class="report-card"><div class="report-icon">📦</div><h3>Inventory Report</h3><p>Monitor products, quantities and inventory status.</p><button class="btn btn-primary" onclick="generateReport('inventory')">View Inventory</button></div>
+                    <div class="report-card"><div class="report-icon">👥</div><h3>Customer Report</h3><p>View customer records and customer activity.</p><button class="btn btn-primary" onclick="generateReport('customer')">Generate Report</button></div>
+                    <div class="report-card"><div class="report-icon">🛒</div><h3>Order Report</h3><p>Review completed, pending and cancelled orders.</p><button class="btn btn-primary" onclick="generateReport('order')">Generate Report</button></div>
                 </div>
-
-                <!-- REPORT OUTPUT BOX -->
                 <div class="card" id="reportOutputCard" style="display: none; margin-top: 30px;">
                     <div class="card-header">
                         <div class="card-title" id="reportOutputTitle">Report Results</div>
@@ -133,42 +178,49 @@
                 </div>
             </section>
 
-            <!-- SETTINGS -->
+            <!-- SETTINGS SECTION -->
             <section id="settingsSection" class="section">
-                <div class="section-heading"><h2>Settings</h2><p>Business Info.</p></div>
-                <div class="card"><p>Settings loaded.</p></div>
+                <div class="section-heading"><h2>Settings</h2><p>Manage your business information.</p></div>
+                <div class="settings-grid">
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">⚙️ Business Information</div></div>
+                        <div class="form-group"><label>Business Name</label><input type="text" class="form-control" value="JM Blindsstar Window Blinds Trading" readonly></div>
+                        <div class="form-group"><label>Address</label><input type="text" class="form-control" value="Rm. 503 Marietta Tower, Poblacion, Iligan City" readonly></div>
+                    </div>
+                </div>
             </section>
         </div>
         
-        <footer class="footer">© 2026 JM Blindsstar.</footer>
+        <footer class="footer">© 2026 JM Blindsstar Window Blinds Trading. All rights reserved.</footer>
     </main>
 </div>
 
-<!-- MODAL -->
+<!-- ADD ORDER MODAL -->
 <div class="modal" id="orderModal">
     <div class="modal-box">
         <div class="modal-header"><h2>Add New Order</h2><button class="close-modal" onclick="closeModal()">×</button></div>
-        <div class="form-group"><label>Customer Name</label><input type="text" id="orderCustomer" class="form-control"></div>
+        <div class="form-group"><label>Customer Name</label><input type="text" id="orderCustomer" class="form-control" placeholder="Enter customer name"></div>
         <div class="form-group"><label>Product</label>
             <select id="orderProduct" class="form-control">
                 <option value="Roller Blinds">Roller Blinds</option>
-                <option value="Synergy Blinds">Synergy Blinds</option>
-                <option value="Fabric Blinds">Fabric Blinds</option>
+                <option value="Horizontal Blinds">Horizontal Blinds</option>
+                <option value="Fabric Curtains">Fabric Curtains</option>
+                <option value="Senergy Blinds">Senergy Blinds</option>
                 <option value="Vertical Blinds">Vertical Blinds</option>
-                <option value="Wood Blinds">Wood Blinds</option>
                 <option value="WinQ">WinQ</option>
             </select>
         </div>
-        <div class="form-group"><label>Quantity</label><input type="number" id="orderQuantity" class="form-control" value="1"></div>
-        <div class="form-group"><label>Amount</label><input type="number" id="orderAmount" class="form-control"></div>
+        <div class="form-group"><label>Quantity</label><input type="number" id="orderQuantity" class="form-control" min="1" value="1"></div>
+        <div class="form-group"><label>Amount</label><input type="number" id="orderAmount" class="form-control" placeholder="Enter amount"></div>
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="addOrder()">Save</button>
+            <button class="btn btn-primary" onclick="addOrder()">Add Order</button>
         </div>
     </div>
 </div>
 
-<div class="notification" id="notification">Saved.</div>
-<script src="../assets/js/admin.js"></script>
+<div class="notification" id="notification">Successfully saved.</div>
+
+<script src="/assets/js/admin.js"></script>
 </body>
 </html>
