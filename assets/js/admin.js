@@ -138,6 +138,89 @@ function addOrder() {
 }
 
 /* =========================
+   ADMIN MANAGEMENT MODAL
+========================= */
+let editMode = false;
+let editingRow = null;
+
+function openAdminModal() {
+    editMode = false;
+    document.getElementById("adminModalTitle").textContent = "Add New Admin";
+    document.getElementById("newAdminUsername").value = "";
+    document.getElementById("newAdminRole").value = "Staff";
+    document.getElementById("adminModal").classList.add("show");
+}
+
+function closeAdminModal() {
+    document.getElementById("adminModal").classList.remove("show");
+}
+
+function saveAdmin() {
+    const username = document.getElementById("newAdminUsername").value.trim();
+    const role = document.getElementById("newAdminRole").value;
+
+    if (username === "") {
+        alert("Username cannot be empty.");
+        return;
+    }
+
+    if (editMode && editingRow) {
+        // Update existing row
+        editingRow.cells[1].innerText = username;
+        editingRow.cells[2].innerText = role;
+        showNotification("Admin updated successfully!");
+    } else {
+        // Add new row
+        const table = document.getElementById("adminTable").getElementsByTagName('tbody')[0];
+        const newRow = table.insertRow();
+        const adminId = "ADM-" + String(table.rows.length + 1).padStart(2, "0");
+
+        newRow.innerHTML = `
+            <td>${adminId}</td>
+            <td>${username}</td>
+            <td>${role}</td>
+            <td>
+                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="editAdmin('${username}', this)">Edit</button>
+                <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteAdmin(this)">Delete</button>
+            </td>
+        `;
+        showNotification("New admin added successfully!");
+    }
+
+    closeAdminModal();
+}
+
+function editAdmin(username, btnElement) {
+    // If called from the hardcoded HTML button, we find the row manually
+    let row;
+    if (btnElement) {
+        row = btnElement.closest('tr');
+    } else {
+        // This handles the hardcoded row in HTML
+        row = document.querySelector(`#adminTable tbody tr td:nth-child(2):contains('${username}')`).parentElement;
+    }
+
+    if (!row) return;
+
+    editMode = true;
+    editingRow = row;
+
+    document.getElementById("adminModalTitle").textContent = "Edit Admin";
+    document.getElementById("newAdminUsername").value = row.cells[1].innerText;
+    document.getElementById("newAdminRole").value = row.cells[2].innerText;
+    
+    document.getElementById("adminModal").classList.add("show");
+}
+
+function deleteAdmin(btnElement) {
+    if (confirm("Are you sure you want to delete this admin?")) {
+        const row = btnElement.closest('tr');
+        row.remove();
+        showNotification("Admin removed.");
+    }
+}
+
+/* =========================
    SEARCH TABLE
 ========================= */
 function searchTable(inputId, tableId) {
@@ -188,17 +271,19 @@ function showNotification(message) {
 }
 
 /* =========================
-   CLOSE MODAL & ESC KEY
+   CLOSE MODALS & ESC KEY
 ========================= */
 window.addEventListener("click", function(event) {
-    const modal = document.getElementById("orderModal");
-    if (event.target === modal) {
-        closeModal();
-    }
+    const orderModal = document.getElementById("orderModal");
+    const adminModal = document.getElementById("adminModal");
+    
+    if (event.target === orderModal) closeModal();
+    if (event.target === adminModal) closeAdminModal();
 });
 
 document.addEventListener("keydown", function(event) {
     if (event.key === "Escape") {
         closeModal();
+        closeAdminModal();
     }
 });
