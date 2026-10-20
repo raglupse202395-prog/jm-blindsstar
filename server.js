@@ -9,44 +9,37 @@ app.use(cors());
 app.use(express.json()); 
 
 // ==========================================
-// STATIC FILES & ROUTING
+// BULLETPROOF STATIC ROUTING
 // ==========================================
-app.use(express.static(path.join(__dirname, 'public')));
+// This serves EVERYTHING from the root folder so CSS/JS always load
+app.use(express.static(__dirname)); 
 
-// Fixes the "Cannot GET /" error for the customer homepage
+// Customer Homepage
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Serves the admin dashboard
+// Admin Dashboard (Fixes the unstyled issue)
 app.get(['/admin', '/admin/'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
 
 // ==========================================
-// POSTGRES DATABASE CONNECTION (SUPABASE)
+// DATABASE & EMAIL
 // ==========================================
-// ⚠️ REPLACE THIS WITH YOUR ACTUAL SUPABASE LINK!
-const connectionString = 'YOUR_SUPABASE_URI_HERE'; 
+const connectionString = 'YOUR_SUPABASE_URI_HERE'; // ⚠️ PASTE LINK HERE
 
-const pool = new Pool({
-    connectionString: connectionString,
-    ssl: { rejectUnauthorized: false }
-});
-
+const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 pool.connect((err) => {
     if (err) console.error('❌ DB Error:', err.message);
     else console.log('✅ Connected to Supabase!');
 });
 
-// ==========================================
-// EMAIL SETUP (NODEMAILER)
-// ==========================================
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'jmblindstar88@gmail.com', 
-        pass: 'abcdefghijklmnop' // ⚠️ REPLACE WITH YOUR 16-LETTER GOOGLE APP PASSWORD
+        pass: 'YOUR_GMAIL_APP_PASSWORD' // ⚠️ PASTE APP PASSWORD HERE
     }
 });
 
@@ -55,35 +48,15 @@ const transporter = nodemailer.createTransport({
 // ==========================================
 app.post('/api/inquiries', async (req, res) => {
     const { name, phone, email, product, message } = req.body;
-    
     try {
-        // 1. Save to Supabase Database
         await pool.query(`INSERT INTO inquiries (name, phone, email, product, message) VALUES ($1, $2, $3, $4, $5)`, [name, phone, email, product, message]);
-        
-        // 2. Send Email Notification to Admin
-        const mailOptions = {
-            from: 'jmblindstar88@gmail.com',
-            to: 'jmblindstar88@gmail.com', 
-            subject: `🚨 NEW QUOTE REQUEST: ${name} - ${product}`,
-            html: `
-                <h2>New Inquiry from Website</h2>
-                <p><b>Name:</b> ${name}</p>
-                <p><b>Phone:</b> ${phone}</p>
-                <p><b>Email:</b> ${email}</p>
-                <p><b>Product Interest:</b> ${product}</p>
-                <p><b>Message:</b> ${message}</p>
-            `
-        };
-
-        transporter.sendMail(mailOptions, function(error, info){
-            if (error) console.log("Email Error:", error);
-            else console.log('📧 Email sent: ' + info.response);
-        });
-
+        transporter.sendMail({
+            from: 'jmblindstar88@gmail.com', to: 'jmblindstar88@gmail.com', 
+            subject: `🚨 NEW QUOTE: ${name} - ${product}`,
+            html: `<p><b>Name:</b> ${name}</p><p><b>Phone:</b> ${phone}</p><p><b>Email:</b> ${email}</p><p><b>Product:</b> ${product}</p><p><b>Message:</b> ${message}</p>`
+        }, (error) => { if (error) console.log("Email Error:", error); });
         res.status(201).json({ success: true });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get('/api/inquiries', async (req, res) => {
