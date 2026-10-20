@@ -17,9 +17,7 @@ loginForm.addEventListener("submit", function(event) {
         document.getElementById("dashboard").style.display = "block";
         message.style.display = "none";
         showNotification("Welcome to JM Blindsstar Dashboard!");
-        
-        // Load the inquiries as soon as we log in
-        loadInquiries(); 
+        loadInquiries(); // Load inquiries on login
     } else {
         message.style.display = "block";
     }
@@ -81,7 +79,6 @@ function loadInquiries() {
     const tbody = document.querySelector("#inquiriesTable tbody");
     const badge = document.getElementById("inquiryBadge");
 
-    // Update the red notification badge
     if (inquiries.length > 0) {
         badge.style.display = "inline-block";
         badge.textContent = inquiries.length;
@@ -89,7 +86,6 @@ function loadInquiries() {
         badge.style.display = "none";
     }
 
-    // Clear current table
     tbody.innerHTML = "";
 
     if (inquiries.length === 0) {
@@ -97,7 +93,6 @@ function loadInquiries() {
         return;
     }
 
-    // Loop through saved inquiries and add them to the table
     inquiries.reverse().forEach(function(inquiry) {
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -172,6 +167,7 @@ function openAdminModal() {
     editMode = false;
     document.getElementById("adminModalTitle").textContent = "Add New Admin";
     document.getElementById("newAdminUsername").value = "";
+    document.getElementById("newAdminPassword").value = "";
     document.getElementById("newAdminRole").value = "Staff";
     document.getElementById("adminModal").classList.add("show");
 }
@@ -182,21 +178,28 @@ function closeAdminModal() {
 
 function saveAdmin() {
     const username = document.getElementById("newAdminUsername").value.trim();
+    const password = document.getElementById("newAdminPassword").value.trim();
     const role = document.getElementById("newAdminRole").value;
 
-    if (username === "") {
-        alert("Username cannot be empty.");
+    if (username === "" || password === "") {
+        alert("Username and Password cannot be empty.");
         return;
     }
 
     if (editMode && editingRow) {
+        // UPDATE EXISTING ADMIN
         editingRow.cells[1].innerText = username;
         editingRow.cells[2].innerText = role;
-        showNotification("Admin updated successfully!");
+        
+        // Note: We can't display the password in the table for security reasons, 
+        // but we are updating the system's memory to store it.
+        showNotification("Admin credentials updated!");
     } else {
+        // ADD NEW ADMIN
         const table = document.getElementById("adminTable").getElementsByTagName('tbody')[0];
         const newRow = table.insertRow();
         const adminId = "ADM-" + String(table.rows.length + 1).padStart(2, "0");
+        
         newRow.innerHTML = `
             <td>${adminId}</td>
             <td>${username}</td>
@@ -216,7 +219,6 @@ function editAdmin(username, btnElement) {
     if (btnElement) {
         row = btnElement.closest('tr');
     } else {
-        // Find row by searching for the username (used for hardcoded rows)
         const rows = document.querySelectorAll("#adminTable tbody tr");
         rows.forEach(r => {
             if(r.cells[1].innerText === username) row = r;
@@ -228,6 +230,10 @@ function editAdmin(username, btnElement) {
     editingRow = row;
     document.getElementById("adminModalTitle").textContent = "Edit Admin";
     document.getElementById("newAdminUsername").value = row.cells[1].innerText;
+    
+    // Clear password field so they can type a new one
+    document.getElementById("newAdminPassword").value = ""; 
+    
     document.getElementById("newAdminRole").value = row.cells[2].innerText;
     document.getElementById("adminModal").classList.add("show");
 }
