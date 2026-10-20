@@ -469,11 +469,7 @@
     </div>
 </footer>
 
-<!-- ==========================================
-     UPDATED JAVASCRIPT FOR FORM SUBMISSION
-========================================== -->
 <script>
-    // Mobile Menu & Scroll Logic
     const menuBtn = document.getElementById("menuBtn");
     const nav = document.getElementById("nav");
     menuBtn.addEventListener("click", function () {
@@ -503,11 +499,9 @@
     window.addEventListener("scroll", reveal);
     reveal(); 
 
-    // Form Submission to Database
     const quoteForm = document.getElementById("quoteForm");
-    
     quoteForm.addEventListener("submit", async function(event) {
-        event.preventDefault(); // Stops page reload
+        event.preventDefault();
         
         const btn = quoteForm.querySelector('button[type="submit"]');
         const originalText = btn.innerText;
