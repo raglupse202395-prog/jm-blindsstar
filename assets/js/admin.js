@@ -10,6 +10,7 @@ loginForm.addEventListener("submit", function(event) {
         document.getElementById("dashboard").style.display = "block";
         loadInquiries();
         loadOrders();
+        loadCustomers();
     } else {
         document.getElementById("loginMessage").style.display = "block";
     }
@@ -34,7 +35,7 @@ async function loadInquiries() {
         const data = await res.json();
         const tbody = document.querySelector("#inquiriesTable tbody");
         tbody.innerHTML = data.map(i => `<tr><td>${new Date(i.date).toLocaleDateString()}</td><td>${i.name}</td><td>${i.phone}</td><td>${i.product}</td><td>${i.message}</td></tr>`).join('');
-    } catch(e) { console.log("Error loading inquiries"); }
+    } catch(e) { console.log(e); }
 }
 
 async function loadOrders() {
@@ -52,7 +53,16 @@ async function loadOrders() {
                 <td>${o.status !== 'Cancelled' ? `<button class="btn btn-danger" onclick="cancelOrder(${o.id})">Cancel</button>` : '-'}</td>
             </tr>
         `).join('');
-    } catch(e) { console.log("Error loading orders"); }
+    } catch(e) { console.log(e); }
+}
+
+async function loadCustomers() {
+    try {
+        const res = await fetch('/api/customers');
+        const data = await res.json();
+        const tbody = document.querySelector("#customersTable tbody");
+        tbody.innerHTML = data.map(c => `<tr><td>#C-${c.id}</td><td>${c.name}</td><td>${c.email}</td><td>${c.phone}</td></tr>`).join('');
+    } catch(e) { console.log(e); }
 }
 
 async function cancelOrder(id) {
