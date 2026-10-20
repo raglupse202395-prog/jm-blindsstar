@@ -1,5 +1,9 @@
+/* =========================
+   RESET & VARIABLES
+========================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: Arial, sans-serif; background: #f4f7fb; color: #172b4d; }
+html { scroll-behavior: smooth; }
+body { font-family: Arial, Helvetica, sans-serif; background: #f4f7fb; color: #172b4d; }
 
 :root {
     --navy: #09234b; --navy-dark: #061a38; --blue: #0757b5;
@@ -7,25 +11,64 @@ body { font-family: Arial, sans-serif; background: #f4f7fb; color: #172b4d; }
     --shadow: 0 5px 20px rgba(9, 35, 75, 0.08);
 }
 
-/* LOGIN */
-.login-page { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(4, 31, 69, 0.9), rgba(4, 31, 69, 0.9)); }
+/* =========================
+   LOGIN PAGE
+========================= */
+.login-page {
+    position: fixed; inset: 0; z-index: 9999; display: flex;
+    align-items: center; justify-content: center;
+    background: linear-gradient(rgba(4, 31, 69, 0.9), rgba(4, 31, 69, 0.9));
+}
 .login-box { width: 420px; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,.3); text-align: center; }
 .login-input { width: 100%; padding: 14px; margin-bottom: 14px; border: 1px solid #ccd6e2; border-radius: 8px; font-size: 15px; outline: none; }
 .login-button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: var(--blue); color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-/* DASHBOARD */
+/* =========================
+   SIDEBAR (FIXED TO NOT CUT OFF)
+========================= */
 .dashboard { display: none; min-height: 100vh; }
-.sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 250px; background: linear-gradient(180deg, var(--navy), var(--navy-dark)); color: white; z-index: 1000; }
-.sidebar-logo { padding: 20px 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,.15); background-color: #ffffff; }
+
+.sidebar { 
+    position: fixed; 
+    left: 0; 
+    top: 0; 
+    bottom: 0; 
+    width: 250px; 
+    background: linear-gradient(180deg, var(--navy), var(--navy-dark)); 
+    color: white; 
+    z-index: 1000; 
+    
+    /* THIS PREVENTS THE CUT-OFF */
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 20px; /* Adds space at the very bottom */
+}
+
+.sidebar-logo { 
+    padding: 20px 15px; 
+    text-align: center; 
+    border-bottom: 1px solid rgba(255,255,255,.15); 
+    background-color: #ffffff; 
+    flex-shrink: 0;
+}
 .sidebar-logo img { width: 220px; height: 85px; object-fit: contain; }
-.sidebar-menu { padding: 20px 12px; }
+
+.sidebar-menu { padding: 20px 12px; flex-grow: 1; }
 .menu-title { color: #9fb3cc; font-size: 11px; text-transform: uppercase; padding: 10px 12px; }
 .menu-item { display: flex; align-items: center; gap: 13px; padding: 13px 14px; margin-bottom: 6px; color: white; text-decoration: none; border-radius: 8px; cursor: pointer; }
 .menu-item:hover { background: rgba(255,255,255,.12); }
 .menu-item.active { background: var(--gold); color: white; }
 .menu-icon { width: 25px; text-align: center; }
-.logout-menu { margin-top: 25px; border-top: 1px solid rgba(255,255,255,.2); padding-top: 20px; }
+.logout-menu { 
+    border-top: 1px solid rgba(255,255,255,.2); 
+    padding-top: 15px; 
+    margin-top: auto; /* Pushes logout to the bottom */
+}
 
+/* =========================
+   MAIN CONTENT
+========================= */
 .main { margin-left: 250px; min-height: 100vh; }
 .topbar { height: 70px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; position: sticky; top: 0; z-index: 100; }
 .page-title { font-size: 22px; font-weight: bold; }
@@ -68,7 +111,6 @@ td { padding: 11px; border-bottom: 1px solid var(--border); font-size: 13px; }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 7px; font-weight: bold; font-size: 13px; }
 .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 7px; outline: none; }
-.form-control:focus { border-color: var(--blue); }
 
 .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .report-card { padding: 25px; background: white; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
@@ -76,3 +118,11 @@ td { padding: 11px; border-bottom: 1px solid var(--border); font-size: 13px; }
 
 .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 5000; align-items: center; justify-content: center; }
 .modal-box { width: 500px; background: white; border-radius: 12px; padding: 25px; }
+
+/* MOBILE */
+@media(max-width: 800px) {
+    .sidebar { transform: translateX(-100%); transition: .3s; }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .mobile-menu { display: block; }
+}
