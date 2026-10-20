@@ -63,7 +63,6 @@ async function cancelOrder(id) {
 }
 
 function openModal() { document.getElementById("orderModal").style.display = "flex"; }
-function closeModal() { document.getElementById("orderModal").style.display = "none"; }
 
 async function addOrder() {
     const customerName = document.getElementById("orderCustomer").value;
@@ -76,7 +75,7 @@ async function addOrder() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerName, product, quantity, amount })
     });
-    closeModal();
+    document.getElementById("orderModal").style.display = "none";
     loadOrders();
 }
 

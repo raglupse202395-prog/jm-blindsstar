@@ -7,14 +7,18 @@ const app = express();
 app.use(cors());
 app.use(express.json()); 
 
-// Serve static files from "public"
+// ==========================================
+// STATIC FILE SERVING (THE FIX)
+// ==========================================
+// This ensures CSS, JS, and Images are always found
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// POSTGRES CONNECTION (SUPABASE)
+// POSTGRES DATABASE CONNECTION (SUPABASE)
 // ==========================================
-// REPLACE THIS WITH YOUR ACTUAL SUPABASE LINK!
-const connectionString = 'postgresql://postgres:[YOUR-PASSWORD]@db.xxxxxx.supabase.co:5432/postgres'; 
+const connectionString = 'YOUR_SUPABASE_URI_HERE'; // PASTE YOUR LINK HERE!
 
 const pool = new Pool({
     connectionString: connectionString,
@@ -27,11 +31,11 @@ pool.connect((err) => {
 });
 
 // ==========================================
-// ROUTES
+// API ROUTES
 // ==========================================
 app.post('/api/inquiries', async (req, res) => {
+    const { name, phone, email, product, message } = req.body;
     try {
-        const { name, phone, email, product, message } = req.body;
         await pool.query(`INSERT INTO inquiries (name, phone, email, product, message) VALUES ($1, $2, $3, $4, $5)`, [name, phone, email, product, message]);
         res.status(201).json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -45,8 +49,8 @@ app.get('/api/inquiries', async (req, res) => {
 });
 
 app.post('/api/orders', async (req, res) => {
+    const { customerName, product, quantity, amount } = req.body;
     try {
-        const { customerName, product, quantity, amount } = req.body;
         await pool.query(`INSERT INTO orders (customerName, product, quantity, amount, status) VALUES ($1, $2, $3, $4, 'Pending')`, [customerName, product, quantity, amount]);
         res.status(201).json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -73,7 +77,7 @@ app.get('/api/customers', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Serve the admin dashboard
+// Serve the Admin Dashboard
 app.get(['/admin', '/admin/'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });

@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JM Blindsstar Business Dashboard</title>
-    <!-- CRITICAL FIX: The / at the start ensures styles load on Render -->
+    <title>JM Blindsstar Dashboard</title>
     <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body>
@@ -58,7 +57,7 @@
             <section id="dashboardSection" class="section active">
                 <div class="section-heading">
                     <h2>Business Dashboard</h2>
-                    <p>Welcome to JM Blindsstar.</p>
+                    <p>Welcome to JM Blindsstar Window Blinds Trading.</p>
                 </div>
             </section>
 
@@ -120,29 +119,20 @@
     </main>
 </div>
 
-<!-- ADD ORDER MODAL -->
-<div class="modal" id="orderModal">
-    <div class="modal-box">
-        <div class="modal-header"><h2>Add New Order</h2><button class="close-modal" onclick="closeModal()">×</button></div>
-        <div class="form-group"><label>Customer Name</label><input type="text" id="orderCustomer" class="form-control"></div>
-        <div class="form-group"><label>Product</label>
-            <select id="orderProduct" class="form-control">
-                <option value="Roller Blinds">Roller Blinds</option>
-                <option value="Fabric Curtains">Fabric Curtains</option>
-            </select>
-        </div>
+<div class="modal" id="orderModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
+    <div class="modal-box" style="background:white; padding:20px; border-radius:10px; width:400px;">
+        <h2>Add New Order</h2>
+        <div class="form-group"><label>Customer</label><input type="text" id="orderCustomer" class="form-control"></div>
+        <div class="form-group"><label>Product</label><input type="text" id="orderProduct" class="form-control"></div>
         <div class="form-group"><label>Quantity</label><input type="number" id="orderQuantity" class="form-control" value="1"></div>
         <div class="form-group"><label>Amount</label><input type="number" id="orderAmount" class="form-control"></div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="addOrder()">Add Order</button>
-        </div>
+        <button onclick="addOrder()" class="btn btn-primary">Save</button>
+        <button onclick="document.getElementById('orderModal').style.display='none'" class="btn btn-secondary">Cancel</button>
     </div>
 </div>
 
 <div class="notification" id="notification">Saved.</div>
 
-<!-- CRITICAL FIX: The / ensures JS loads on Render -->
 <script src="/assets/js/admin.js"></script>
 </body>
 </html>
