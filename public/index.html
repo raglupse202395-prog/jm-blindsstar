@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
@@ -51,7 +51,7 @@
         .nav-btn:hover { background: var(--gold-light); transform: translateY(-2px); }
         .menu-btn { display: none; background: none; border: 0; color: white; font-size: 30px; cursor: pointer; }
 
-        .hero { min-height: 100vh; display: flex; align-items: center; position: relative; background: linear-gradient(90deg, rgba(6, 20, 38, 0.95) 0%, rgba(6, 20, 38, 0.7) 50%, rgba(6, 20, 38, 0.3) 100%), url("images/hero-bg.jpg") center/cover no-repeat; }
+        .hero { min-height: 100vh; display: flex; align-items: center; position: relative; background: linear-gradient(90deg, rgba(6, 20, 38, 0.95) 0%, rgba(6, 20, 38, 0.7) 50%, rgba(6, 20, 38, 0.3) 100%), url("/images/hero-bg.jpg") center/cover no-repeat; }
         .hero-content { max-width: 750px; color: white; padding-top: 80px; }
         .hero-content .tag { display: inline-block; color: var(--gold-light); font-size: 13px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 20px; }
         .hero h1 { font-size: clamp(45px, 7vw, 80px); line-height: 1.1; margin-bottom: 25px; }
@@ -142,7 +142,7 @@
         .review p { color: #d1d5db; font-size: 15px; margin-bottom: 25px; font-style: italic; }
         .review strong { color: white; font-family: var(--font-body); font-weight: 600; }
 
-        .cta { padding: 120px 0; text-align: center; color: white; background: linear-gradient(rgba(11,31,58,0.85), rgba(11,31,58,0.85)), url("images/cta-bg.jpg") center/cover fixed; }
+        .cta { padding: 120px 0; text-align: center; color: white; background: linear-gradient(rgba(11,31,58,0.85), rgba(11,31,58,0.85)), url("/images/cta-bg.jpg") center/cover fixed; }
         .cta h2 { font-size: clamp(35px, 5vw, 55px); margin-bottom: 20px; }
         .cta p { color: #d1d5db; font-size: 18px; margin-bottom: 35px; max-width: 600px; margin-inline: auto; }
 
@@ -292,7 +292,7 @@
                 <article class="product-card reveal">
                     <div class="product-image collage-grid">
                         <img src="/public/images/roller-blinds.jpg" alt="WinQ 1" loading="lazy">
-                        <img src="/public/mages/vertical-blinds.jpg" alt="WinQ 2" loading="lazy">
+                        <img src="/public/images/vertical-blinds.jpg" alt="WinQ 2" loading="lazy">
                         <img src="/public/images/combi-blinds.jpg" alt="WinQ 3" loading="lazy">
                         <img src="/public/images/wood-blinds.jpg" alt="WinQ 4" loading="lazy">
                     </div>
@@ -469,8 +469,11 @@
     </div>
 </footer>
 
+<!-- ==========================================
+     UPDATED JAVASCRIPT FOR FORM SUBMISSION
+========================================== -->
 <script>
-    // Mobile Menu
+    // Mobile Menu & Scroll Logic
     const menuBtn = document.getElementById("menuBtn");
     const nav = document.getElementById("nav");
     menuBtn.addEventListener("click", function () {
@@ -483,14 +486,10 @@
             menuBtn.setAttribute("aria-expanded", "false");
         });
     });
-
-    // Header Scroll
     const header = document.getElementById("mainHeader");
     window.addEventListener("scroll", function() {
         header.classList.toggle("scrolled", window.scrollY > 50);
     });
-
-    // Scroll Reveal
     function reveal() {
         var reveals = document.querySelectorAll(".reveal");
         for (var i = 0; i < reveals.length; i++) {
@@ -504,33 +503,45 @@
     window.addEventListener("scroll", reveal);
     reveal(); 
 
-    // Contact Form - Save to LocalStorage for Admin Dashboard
+    // Form Submission to Database
     const quoteForm = document.getElementById("quoteForm");
-    quoteForm.addEventListener("submit", function(event) {
-        event.preventDefault();
+    
+    quoteForm.addEventListener("submit", async function(event) {
+        event.preventDefault(); // Stops page reload
         
-        const name = document.getElementById("name").value;
-        const phone = document.getElementById("phone").value;
-        const email = document.getElementById("email").value;
-        const product = document.getElementById("product").value;
-        const message = document.getElementById("message").value;
-        
-        const newInquiry = {
-            id: Date.now(),
-            name: name,
-            phone: phone,
-            email: email,
-            product: product,
-            message: message,
-            date: new Date().toLocaleDateString()
+        const btn = quoteForm.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.innerText = "Sending...";
+        btn.disabled = true;
+
+        const inquiryData = {
+            name: document.getElementById("name").value,
+            phone: document.getElementById("phone").value,
+            email: document.getElementById("email").value,
+            product: document.getElementById("product").value,
+            message: document.getElementById("message").value
         };
 
-        let inquiries = JSON.parse(localStorage.getItem("jm_inquiries")) || [];
-        inquiries.push(newInquiry);
-        localStorage.setItem("jm_inquiries", JSON.stringify(inquiries));
+        try {
+            const response = await fetch('/api/inquiries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(inquiryData)
+            });
 
-        alert("Thank you, " + name + "!\n\nYour inquiry for " + product + " has been received.\n\nJM BLINDSSTAR will contact you soon.");
-        quoteForm.reset();
+            if (response.ok) {
+                alert("Thank you! Your inquiry has been sent. We will contact you soon.");
+                quoteForm.reset();
+            } else {
+                alert("There was an error sending your message. Please try again.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Network error. Please check your connection.");
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     });
 </script>
 </body>
