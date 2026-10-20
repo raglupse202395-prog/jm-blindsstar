@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JM Blindsstar Business Dashboard</title>
+    
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div class="login-page" id="loginPage">
+    <div class="login-box">
+        <img src="../images/logo1.png" alt="JM Blindsstar Window Blinds Trading" class="login-logo">
+        <div class="login-title">Business Management Dashboard</div>
+
+        <form id="loginForm">
+            <input type="text" id="username" class="login-input" placeholder="Username" required>
+            <input type="password" id="password" class="login-input" placeholder="Password" required>
+            <button type="submit" class="login-button">Login</button>
+        </form>
+
+        <div class="login-message" id="loginMessage">Incorrect username or password.</div>
+
+        <div class="demo-login">
+            Demo Login<br>
+            Username: <b>admin</b><br>
+            Password: <b>123456789</b>
+        </div>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/logo1.png" alt="JM Blindsstar Logo">
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-title">Main Menu</div>
+            <a class="menu-item active" onclick="showSection('dashboardSection', this)">
+                <span class="menu-icon">🏠</span> Dashboard
+            </a>
+            <a class="menu-item" onclick="showSection('customersSection', this)">
+                <span class="menu-icon">👥</span> Customers
+            </a>
+            <a class="menu-item" onclick="showSection('ordersSection', this)">
+                <span class="menu-icon">🛒</span> Orders
+            </a>
+            <a class="menu-item" onclick="showSection('salesSection', this)">
+                <span class="menu-icon">₱</span> Sales
+            </a>
+            <a class="menu-item" onclick="showSection('reportsSection', this)">
+                <span class="menu-icon">📊</span> Reports
+            </a>
+            <a class="menu-item" onclick="showSection('settingsSection', this)">
+                <span class="menu-icon">⚙️</span> Settings
+            </a>
+            <div class="logout-menu">
+                <a class="menu-item" onclick="logout()">
+                    <span class="menu-icon">🚪</span> Logout
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu" onclick="toggleSidebar()">☰</button>
+                <div class="page-title" id="pageTitle">Dashboard</div>
+            </div>
+            <div class="admin-profile">
+                <div class="admin-avatar">A</div>
+                <div><b>Admin</b></div>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- DASHBOARD SECTION -->
+            <section id="dashboardSection" class="section active">
+                <div class="section-heading">
+                    <h2>Business Dashboard</h2>
+                    <p>Welcome to JM Blindsstar Window Blinds Trading.</p>
+                </div>
+                
+                <div class="card-grid">
+                    <div class="card stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div>
+                            <div class="stat-title">Total Customers</div>
+                            <div class="stat-number">250</div>
+                            <div class="stat-change">↑ Growing</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon">🛒</div>
+                        <div>
+                            <div class="stat-title">Total Orders</div>
+                            <div class="stat-number">128</div>
+                            <div class="stat-change">↑ Growing</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon">₱</div>
+                        <div>
+                            <div class="stat-title">Total Sales</div>
+                            <div class="stat-number">₱850K</div>
+                            <div class="stat-change">↑ 15% This Month</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div>
+                            <div class="stat-title">Pending Orders</div>
+                            <div class="stat-number">12</div>
+                            <div style="color:#f0a500;font-size:12px;margin-top:3px;">Needs Attention</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">📈 Monthly Sales</div></div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Month</th><th>Orders</th><th>Sales</th></tr></thead>
+                                <tbody>
+                                    <tr><td>January</td><td>32</td><td>₱120,000</td></tr>
+                                    <tr><td>February</td><td>38</td><td>₱145,000</td></tr>
+                                    <tr><td>March</td><td>41</td><td>₱158,000</td></tr>
+                                    <tr><td>April</td><td>45</td><td>₱170,000</td></tr>
+                                    <tr><td>May</td><td>52</td><td>₱185,000</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">💰 Sales Overview <small>(This Month)</small></div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Product</th><th>Qty</th><th>Total</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Roller Blinds</td><td>12</td><td>₱96,000</td></tr>
+                                    <tr><td>Horizontal Blinds</td><td>8</td><td>₱76,000</td></tr>
+                                    <tr><td>Fabric Curtains</td><td>15</td><td>₱105,000</td></tr>
+                                    <tr><td>Senergy Blinds</td><td>10</td><td>₱85,000</td></tr>
+                                    <tr><td>Vertical Blinds</td><td>7</td><td>₱63,000</td></tr>
+                                    <tr><td>WinQ</td><td>6</td><td>₱52,800</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">👥 Recent Customers</div>
+                            <button class="btn btn-primary" onclick="showSectionById('customersSection')">View All</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>ID</th><th>Customer</th><th>Email</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    <tr><td>C001</td><td>Maria Santos</td><td>maria@email.com</td><td><span class="status active">Active</span></td></tr>
+                                    <tr><td>C002</td><td>Juan Dela Cruz</td><td>juan@email.com</td><td><span class="status active">Active</span></td></tr>
+                                    <tr><td>C003</td><td>Ana Reyes</td><td>ana@email.com</td><td><span class="status active">Active</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🛒 Recent Orders</div>
+                            <button class="btn btn-gold" onclick="openModal()">+ Add Order</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Order No.</th><th>Customer</th><th>Product</th><th>Amount</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    <tr><td>#ORD-0012</td><td>Maria</td><td>Roller Blinds</td><td>₱9,500</td><td><span class="status completed">Completed</span></td></tr>
+                                    <tr><td>#ORD-0011</td><td>Juan</td><td>Horizontal Blinds</td><td>₱7,000</td><td><span class="status completed">Completed</span></td></tr>
+                                    <tr><td>#ORD-0010</td><td>Gloria</td><td>Fabric Curtains</td><td>₱12,000</td><td><span class="status pending">Pending</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CUSTOMERS SECTION -->
+            <section id="customersSection" class="section">
+                <div class="section-heading">
+                    <h2>Customers</h2>
+                    <p>Manage your customer records.</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Customer Records</div>
+                        <input type="text" class="search-box" id="customerSearch" placeholder="Search customer..." onkeyup="searchTable('customerSearch','customersTable')">
+                    </div>
+                    <div class="table-container">
+                        <table id="customersTable">
+                            <thead><tr><th>ID</th><th>Customer Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>C001</td><td>Maria Santos</td><td>maria@email.com</td><td>0917 123 4567</td><td>Iligan City</td><td><span class="status active">Active</span></td></tr>
+                                <tr><td>C002</td><td>Juan Dela Cruz</td><td>juan@email.com</td><td>0918 234 5678</td><td>Cagayan de Oro</td><td><span class="status active">Active</span></td></tr>
+                                <tr><td>C003</td><td>Ana Reyes</td><td>ana@email.com</td><td>0919 345 6789</td><td>Iligan City</td><td><span class="status active">Active</span></td></tr>
+                                <tr><td>C004</td><td>Gloria Ramos</td><td>gloria@email.com</td><td>0920 456 7890</td><td>Marawi City</td><td><span class="status active">Active</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ORDERS SECTION -->
+            <section id="ordersSection" class="section">
+                <div class="section-heading">
+                    <h2>Orders</h2>
+                    <p>Manage customer orders and order status.</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Order Management</div>
+                        <button class="btn btn-gold" onclick="openModal()">+ Add Order</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Order No.</th><th>Customer</th><th>Product</th><th>Quantity</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+                            <tbody id="ordersTable">
+                                <tr><td>#ORD-0012</td><td>Maria Santos</td><td>Roller Blinds</td><td>12</td><td>₱96,000</td><td>2026-08-26</td><td><span class="status completed">Completed</span></td></tr>
+                                <tr><td>#ORD-0011</td><td>Juan Dela Cruz</td><td>Horizontal Blinds</td><td>8</td><td>₱76,000</td><td>2026-08-25</td><td><span class="status completed">Completed</span></td></tr>
+                                <tr><td>#ORD-0010</td><td>Gloria Ramos</td><td>Fabric Curtains</td><td>15</td><td>₱105,000</td><td>2026-08-24</td><td><span class="status pending">Pending</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SALES SECTION -->
+            <section id="salesSection" class="section">
+                <div class="section-heading">
+                    <h2>Sales Records</h2>
+                   
